@@ -15,8 +15,31 @@ app.set("view engine", "ejs");
 require("./config/passport");
 
 // Session Config
+app.use(
+    session ({
+        secret: "tusla",
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 365,
+            secure: false,
+        },
+        resave: false,
+        saveUnititialized: false,
+        sameSite: "none",
+        secure: true,
+    })
+)
 
 // Passport Config
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.authenticate("local", { failureRedirect: "/login" }, (req, res) => {
+    if (!req.user) {
+        res.redirect("/login");
+    }
+}
+);
 
 // Routes
 app.use(require("./routes/index.routes"));

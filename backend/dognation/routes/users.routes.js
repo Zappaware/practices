@@ -14,11 +14,14 @@ router.post("/register", async (req, res) => {
         const user = await helper.userExists(username);
         if (user) {
             console.log("User already exists!");
-            return res.redirect("login");
+            return res.redirect("/users/register");
         }
         // Hash password before storing in local DB:
+        const salt = await bcrypt.genSalt(10);
 
-        const newUser = { ...id, username, password: password };
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const newUser = { ...id, username, password: hashedPassword };
 
         // Store new user in local DB
         await users.push(newUser);
@@ -32,12 +35,16 @@ router.post("/register", async (req, res) => {
 
 // Log In User:
 router.post("/login", (req, res) => {
-    res.redirect("../");
+    passport.authenticate("local", {
+        successRedirect: "/",
+        failureRedirect: "/login",
+    })(req, res);
 });
 
 // Log out user:
 router.get("/logout", (req, res) => {
-    res.redirect("../");
+    req.logout();
+    res.redirect("/");
 });
 
 router.get("/register", (req, res) => {
